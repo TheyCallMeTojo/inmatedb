@@ -1,0 +1,15 @@
+## (Brandon) local project exclusions (virtual enviornments, etc.)
+/proj_files
+
+# vs code exclusions
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.vs/
+
+# python exclusions
+__pycache__/
+*.pyc
