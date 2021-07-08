@@ -1,7 +1,7 @@
 # inmatedb
 
 ### Data Source: 
-https://www.capecountysheriff.org/roster.php?grp=20
+https://www.capecountysheriff.org/roster.php?grp=10
 
 ### Technologies Used:
 + [BeautifulSoup4](https://pypi.org/project/beautifulsoup4/#description) for web scraping
