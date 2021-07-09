@@ -22,9 +22,8 @@ class RosterParse:
 
         roster_url = f"https://www.capecountysheriff.org/roster.php?grp={page_number * 10}"
         page = requests.get(roster_url)
-        soup = BeautifulSoup(page.content, 'html.parser')
-        self.roster_html = soup
-        return soup
+        self.roster_html = BeautifulSoup(page.content, 'html.parser')
+        return self.roster_html
 
     @property
     def roster_length(self):
