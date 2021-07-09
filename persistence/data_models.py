@@ -1,7 +1,9 @@
 from typing import List, NamedTuple, Optional
-
+from datetime import datetime
 from persistence.model import Model
 
+
+__all__ = ["Name", "Demographics", "InmateStatus", "ProfileData"]
 
 @Model
 class Name(NamedTuple):
@@ -19,8 +21,9 @@ class InmateStatus(NamedTuple):
     arresting_agency: str
     booking_number: int
     booking_date: str
+    booking_date_unformated: float
     charges: List[str]
-    bond: Optional[float]
+    bond: Optional[str]
     jailed: bool
 
 @Model

@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from metaclasses.singleton import Singleton
 from persistence.data_models import *
-
+from datetime import datetime
 from scraping import scraping_utils as utils
 
 
@@ -119,10 +119,11 @@ class ProfileParse(metaclass=Singleton):
         agency = utils.get_table_value(self.profile_table, "Arresting Agency")
         booking_num = int(utils.get_table_value(self.profile_table, "Booking #"))
         booking_date = utils.get_table_value(self.profile_table, "Booking Date")
+        booking_date_unformated = datetime.strptime(booking_date, "%m-%d-%Y - %I:%S %p").timestamp()
         charges = self.fetch_inmate_charges()
         bond = utils.get_table_value(self.profile_table, "Bond")
-        jailed = True # TODO: compare against current roster
-        self.__status = InmateStatus(agency, booking_num, booking_date, charges, bond, jailed)
+        jailed = True
+        self.__status = InmateStatus(agency, booking_num, booking_date, booking_date_unformated, charges, bond, jailed)
         return self.__status
     
     @property
