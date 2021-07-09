@@ -1,5 +1,6 @@
 ## (Brandon) local project exclusions (virtual enviornments, etc.)
 /proj_files
+/img
 
 # vs code exclusions
 .vscode/*
