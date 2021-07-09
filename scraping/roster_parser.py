@@ -10,7 +10,7 @@ from scraping import scraping_utils as utils
 class RosterParse:
 
     def __init__(self):
-        self.load_roster_page(1)
+        self.invalidate_cached_values()
     
     def invalidate_cached_values(self):
         self.roster_html = None
@@ -18,8 +18,6 @@ class RosterParse:
         self.__inmate_tables = None
 
     def load_roster_page(self, page_number):
-        self.invalidate_cached_values()
-
         roster_url = f"https://www.capecountysheriff.org/roster.php?grp={page_number * 10}"
         page = requests.get(roster_url)
         self.roster_html = BeautifulSoup(page.content, 'html.parser')
@@ -31,6 +29,7 @@ class RosterParse:
             return self.__roster_length
 
         if self.roster_html is None:
+            self.invalidate_cached_values()
             self.load_roster_page(1)
         
         is_roster_count = lambda string: utils.text_contains_word(string, "Inmate Roster")
@@ -50,6 +49,7 @@ class RosterParse:
         if self.__inmate_tables is not None:
             return self.__inmate_tables
 
+        self.invalidate_cached_values()
         total_page_count = math.ceil(self.roster_length / 10)
         inmate_tables = []
 
