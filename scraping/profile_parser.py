@@ -3,19 +3,23 @@ from typing import List, NamedTuple, Optional
 
 import requests
 from bs4 import BeautifulSoup
+from persistence.model import Model
 
 from scraping import scraping_utils as utils
 
 
+@Model
 class Name(NamedTuple):
     first: str
     last: str
 
+@Model
 class Demographics(NamedTuple):
     race: str
     age: int
     gender: str
 
+@Model
 class InmateStatus(NamedTuple):
     arresting_agency: str
     booking_number: int
@@ -24,18 +28,18 @@ class InmateStatus(NamedTuple):
     bond: Optional[float]
     jailed: bool
 
+@Model
 class ProfileData(NamedTuple):
     name: Name
     demos: Demographics
     status: InmateStatus
-    profile_image_filepath: str
+    image_filepath: str
 
 
 class ProfileParse:
 
     def __init__(self, inmate_table):
-        self.__booking_num = int(utils.get_table_value(inmate_table, "Booking #"))
-        self.profile_html = self.reload_profile()
+        self.load_profile(inmate_table)
     
     def invalidate_cached_values(self):
         self.__profile_table = None
@@ -43,17 +47,21 @@ class ProfileParse:
         self.__demos = None
         self.__status = None
         self.__data = None
+        self.__image_filepath = None
 
-    def reload_profile(self):
+    def load_profile(self, inmate_table):
         self.invalidate_cached_values()
-
-        profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={self.__booking_num}"
+        booking_num = int(utils.get_table_value(inmate_table, "Booking #"))
+        profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={booking_num}"
         page = requests.get(profile_url)
         self.profile_html = BeautifulSoup(page.content, 'html.parser')
         return self.profile_html
 
     @property
-    def inmate_image_filepath(self):
+    def image_filepath(self):
+        if self.__image_filepath is not None:
+            return self.__image_filepath
+        
         image_filepath = f"img/{self.status.booking_number}.jpg"
 
         if not os.path.exists("img"):
@@ -65,9 +73,10 @@ class ProfileParse:
 
             with open(image_filepath, "wb") as img_file:
                 img_file.write(requests.get(image_url).content)
-                utils.random_delay(min_delay=200, max_delay=500)        
+                utils.random_delay(min_delay=10, max_delay=50)
 
-        return image_filepath
+        self.__image_filepath = image_filepath
+        return self.__image_filepath
 
     @property
     def profile_table(self):
@@ -143,6 +152,7 @@ class ProfileParse:
         name = self.name
         demos = self.demos
         status = self.status
-        img_path = self.inmate_image_filepath
+        img_path = self.image_filepath
         self.__data = ProfileData(name, demos, status, img_path)
         return self.__data
+

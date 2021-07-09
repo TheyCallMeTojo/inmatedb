@@ -18,10 +18,26 @@ class RosterParse:
         self.__inmate_tables = None
 
     def load_roster_page(self, page_number):
+        # utils.random_delay()
         roster_url = f"https://www.capecountysheriff.org/roster.php?grp={page_number * 10}"
         page = requests.get(roster_url)
         self.roster_html = BeautifulSoup(page.content, 'html.parser')
         return self.roster_html
+
+    def fetch_inmate_tables_on_page(self):
+        if self.roster_html is None:
+            return []
+        
+        presentation_tables = self.roster_html.find_all(name="table", attrs={"role":"presentation"})
+        main_table = presentation_tables[0]
+
+        inmate_tables = []
+        for tr in main_table.find_all(name="tr"):
+            matches = tr.find_all(name="table", attrs={"class":"inmateTable"})
+            if len(matches) > 0:
+                inmate_tables.append(tr)
+        
+        return inmate_tables
 
     @property
     def roster_length(self):
@@ -45,28 +61,22 @@ class RosterParse:
         return None
 
     @property
+    def roster_page_length(self):
+        return math.ceil(self.roster_length / 10)
+
+    @property
     def inmate_tables(self):
         if self.__inmate_tables is not None:
             return self.__inmate_tables
 
         self.invalidate_cached_values()
-        total_page_count = math.ceil(self.roster_length / 10)
+
         inmate_tables = []
-
-        for page_num in range(1, total_page_count+1):
-            utils.random_delay()
+        for page_num in range(1, self.roster_page_length+1):
             self.load_roster_page(page_num)
-
-            presentation_tables = self.roster_html.find_all(name="table", attrs={"role":"presentation"})
-            main_table = presentation_tables[0]
-
-            for tr in main_table.find_all(name="tr"):
-                matches = tr.find_all(name="table", attrs={"class":"inmateTable"})
-                if len(matches) > 0:
-                    inmate_tables.append(tr)
+            new_inmate_tables = self.fetch_inmate_tables_on_page()
+            inmate_tables.extend(new_inmate_tables)
 
         self.__inmate_tables = inmate_tables
         return self.__inmate_tables
-    
-
     
