@@ -5,9 +5,10 @@ import requests
 from bs4 import BeautifulSoup
 
 from scraping import scraping_utils as utils
+from metaclasses.singleton import Singleton
 
 
-class RosterParse:
+class RosterParse(metaclass=Singleton):
 
     def __init__(self):
         self.invalidate_cached_values()
@@ -16,6 +17,7 @@ class RosterParse:
         self.roster_html = None
         self.__roster_length = None
         self.__inmate_tables = None
+        self.__booking_nums = None
 
     def load_roster_page(self, page_number):
         # utils.random_delay()
@@ -63,6 +65,19 @@ class RosterParse:
     @property
     def roster_page_length(self):
         return math.ceil(self.roster_length / 10)
+
+    @property
+    def inmate_booking_numbers(self):
+        if self.__booking_nums is not None:
+            return self.__booking_nums
+        
+        booking_nums = []
+        for inmate_table in self.inmate_tables:
+            booking_num = utils.get_table_value(inmate_table, "Booking #")
+            booking_nums.append(int(booking_num))
+
+        self.__booking_nums = booking_nums
+        return self.__booking_nums
 
     @property
     def inmate_tables(self):

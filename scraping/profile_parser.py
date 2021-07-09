@@ -1,47 +1,25 @@
 import os
-from typing import List, NamedTuple, Optional
 
 import requests
 from bs4 import BeautifulSoup
-from persistence.model import Model
+from metaclasses.singleton import Singleton
+from persistence.data_models import *
 
 from scraping import scraping_utils as utils
 
 
-@Model
-class Name(NamedTuple):
-    first: str
-    last: str
+class ProfileParse(metaclass=Singleton):
 
-@Model
-class Demographics(NamedTuple):
-    race: str
-    age: int
-    gender: str
+    def __init__(self, inmate_table=None, booking_number=None):
+        self.invalidate_cached_values()
 
-@Model
-class InmateStatus(NamedTuple):
-    arresting_agency: str
-    booking_number: int
-    booking_date: str
-    charges: List[str]
-    bond: Optional[float]
-    jailed: bool
-
-@Model
-class ProfileData(NamedTuple):
-    name: Name
-    demos: Demographics
-    status: InmateStatus
-    image_filepath: str
-
-
-class ProfileParse:
-
-    def __init__(self, inmate_table):
-        self.load_profile(inmate_table)
+        if inmate_table is not None:
+            self.load_profile(inmate_table)
+        elif booking_number is not None:
+            self.load_profile_by_booking_number(booking_number)
     
     def invalidate_cached_values(self):
+        self.profile_html = None
         self.__profile_table = None
         self.__name = None
         self.__demos = None
@@ -50,9 +28,12 @@ class ProfileParse:
         self.__image_filepath = None
 
     def load_profile(self, inmate_table):
-        self.invalidate_cached_values()
         booking_num = int(utils.get_table_value(inmate_table, "Booking #"))
-        profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={booking_num}"
+        self.load_profile_by_booking_number(booking_num)
+    
+    def load_profile_by_booking_number(self, booking_number):
+        self.invalidate_cached_values()
+        profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={booking_number}"
         page = requests.get(profile_url)
         self.profile_html = BeautifulSoup(page.content, 'html.parser')
         return self.profile_html

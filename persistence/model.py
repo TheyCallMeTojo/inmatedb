@@ -14,18 +14,17 @@ def Model(model: NamedTuple):
     '''Decorator to add extra functionality to NamedTuples'''
 
     def as_dict(model: NamedTuple):
-        model_name = model.__class__.__name__
-        model_dict = {model_name: {}}
+        model_dict = dict()
 
         field_names = model._fields
         for field_idx, field_name in enumerate(field_names):
             attribute = model[field_idx]
+            
             if has_method(attribute, "as_dict"):
-                attr_name = attribute.__class__.__name__
                 attr_dict = attribute.as_dict()
-                model_dict[model_name][field_name] = attr_dict[attr_name]
+                model_dict[field_name] = attr_dict
             else:
-                model_dict[model_name][field_name] = attribute
+                model_dict[field_name] = attribute
 
         return model_dict
 
