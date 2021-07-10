@@ -12,7 +12,7 @@ from functools import partial
 from metaclasses.singleton import Singleton
 
 from logger.push_handler import PushHandler, PushCredentials
-from logging.handlers import RotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler
 
 
 class LevelFilter(logging.Filter):
@@ -45,11 +45,11 @@ class InatedbLogger(metaclass=Singleton):
             # self.debug_log.addFilter(LevelFilter(logging.DEBUG, logging.CRITICAL))
             handlers.append(self.debug_log)
 
-        self.info_log = RotatingFileHandler("logs/inmatedb_info.log", maxBytes=2000, backupCount=3)
+        self.info_log = TimedRotatingFileHandler("logs/inmatedb_info.log", when="d", interval=1, backupCount=3)
         self.info_log.addFilter(LevelFilter(logging.INFO, logging.WARNING))
         handlers.append(self.info_log)
 
-        self.error_log = RotatingFileHandler("logs/inmatedb_error.log", maxBytes=2000, backupCount=3)
+        self.error_log = TimedRotatingFileHandler("logs/inmatedb_error.log", when="d", interval=1, backupCount=3)
         self.error_log.addFilter(LevelFilter(logging.ERROR, logging.CRITICAL))
         handlers.append(self.error_log)
 
