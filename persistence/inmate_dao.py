@@ -30,7 +30,7 @@ class QueryCondition:
 
 class InmateDAO(metaclass=Singleton):
 
-    def __init__(self, database_filepath="inmatedb.json"):
+    def __init__(self, database_filepath="data/inmatedb.json"):
         TinyDB.default_table_name = "inmates"
         self.db = TinyDB(database_filepath)
 

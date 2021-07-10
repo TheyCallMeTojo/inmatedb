@@ -37,3 +37,4 @@ def Model(model: NamedTuple):
     model.as_json = as_json
     model.__str__ = as_json
     return model
+

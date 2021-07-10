@@ -55,10 +55,10 @@ class ProfileParse(metaclass=Singleton):
         if self.__image_filepath is not None:
             return self.__image_filepath
         
-        image_filepath = f"img/{self.status.booking_number}.jpg"
+        image_filepath = f"data/img/{self.status.booking_number}.jpg"
 
-        if not os.path.exists("img"):
-            os.makedirs("img")
+        if not os.path.exists("data/img"):
+            os.makedirs("data/img")
         if not os.path.exists(image_filepath):
             inmate_image_elm = self.profile_table.find(name="img")
             image_relpath = inmate_image_elm['src']
