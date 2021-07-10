@@ -7,7 +7,7 @@ from tinydb import Query, TinyDB
 from persistence.data_models import *
 
 
-def unpack_record(record: dict) -> ProfileData:
+def bundle_profile_data(record: dict) -> ProfileData:
     if record is None:
         return None
     
@@ -20,7 +20,7 @@ def unpack_record(record: dict) -> ProfileData:
 
 def sort_profiles_by_date(profiles: List[ProfileData]) -> List[ProfileData]:
     on_bk_date = lambda p: p.status.booking_date_unformated
-    return sorted(profiles, on_bk_date)
+    return sorted(profiles, key=on_bk_date)
 
 class QueryCondition:
     match_eq = lambda value: lambda query: query == value
@@ -31,6 +31,13 @@ class QueryCondition:
 class InmateDAO(metaclass=Singleton):
 
     def __init__(self, database_filepath="inmatedb.json"):
+        TinyDB.default_table_name = "inmates"
+        self.db = TinyDB(database_filepath)
+
+    def load_database(self, database_filepath):
+        if self.db is not None:
+            self.db.close()
+
         TinyDB.default_table_name = "inmates"
         self.db = TinyDB(database_filepath)
 
@@ -49,7 +56,7 @@ class InmateDAO(metaclass=Singleton):
         InmateAttribute = reduce(lambda query, attr: query[attr], attrs, Query())
         selector = condition(InmateAttribute)
         results = self.db.search(selector)
-        profiles = list(map(unpack_record, results))
+        profiles = list(map(bundle_profile_data, results))
         return sort_profiles_by_date(profiles)
 
     def get_members_by_firstname(self, first_name: str) -> List[ProfileData]:
@@ -75,7 +82,7 @@ class InmateDAO(metaclass=Singleton):
 
     def get_all_members(self) -> List[ProfileData]: 
         '''Gets the profile of every member.'''
-        profiles = list(map(unpack_record, self.db.all()))
+        profiles = list(map(bundle_profile_data, self.db.all()))
         return sort_profiles_by_date(profiles)
 
     def get_member_by_number(self, booking_number: int) -> Optional[ProfileData]:

@@ -14,3 +14,4 @@ img/
 # python exclusions
 __pycache__/
 *.pyc
+*.json

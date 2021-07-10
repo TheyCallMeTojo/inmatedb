@@ -26,7 +26,7 @@ class RosterParse(metaclass=Singleton):
         self.roster_html = BeautifulSoup(page.content, 'html.parser')
         return self.roster_html
 
-    def fetch_inmate_tables_on_page(self):
+    def get_inmate_tables_on_page(self):
         if self.roster_html is None:
             return []
         
@@ -89,7 +89,7 @@ class RosterParse(metaclass=Singleton):
         inmate_tables = []
         for page_num in range(1, self.roster_page_length+1):
             self.load_roster_page(page_num)
-            new_inmate_tables = self.fetch_inmate_tables_on_page()
+            new_inmate_tables = self.get_inmate_tables_on_page()
             inmate_tables.extend(new_inmate_tables)
 
         self.__inmate_tables = inmate_tables
