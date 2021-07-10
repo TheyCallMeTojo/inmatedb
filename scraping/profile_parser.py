@@ -6,6 +6,7 @@ from metaclasses.singleton import Singleton
 from persistence.data_models import *
 from datetime import datetime
 from scraping import scraping_utils as utils
+import time
 
 
 class ProfileParse(metaclass=Singleton):
@@ -34,9 +35,20 @@ class ProfileParse(metaclass=Singleton):
     def load_profile_by_booking_number(self, booking_number):
         self.invalidate_cached_values()
         profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={booking_number}"
-        page = requests.get(profile_url)
+
+        # TODO: Add proper error handling
+        for attempt in range(5):
+            try:
+                page = requests.get(profile_url)
+                break
+            except ConnectionError:
+                if attempt == 4:
+                    raise Exception(f"Failed to load profile {booking_number}")
+                time.sleep(1)
+        
         self.profile_html = BeautifulSoup(page.content, 'html.parser')
         return self.profile_html
+
 
     @property
     def image_filepath(self):
