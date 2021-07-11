@@ -3,6 +3,8 @@ import sched
 import time
 from typing import Callable, NamedTuple
 
+from logger.inmatedb_logger import InatedbLogger
+
 
 class TimeSlot(NamedTuple):
     day_offset: int = 0
@@ -41,6 +43,7 @@ class EventScheduler:
     def __init__(self, silent=False):
         self.silent = silent
         self.scheduler = sched.scheduler(time.time, time.sleep)
+        self.logger = InatedbLogger()
 
     def schedule_event(self, sched_item, scheduler=None):
         if scheduler is None:
@@ -48,7 +51,7 @@ class EventScheduler:
             self.last_schedule_item = sched_item
 
         if not self.silent:
-            print(sched_item)
+            self.logger.info(sched_item)
         
         delay = sched_item.start.time_until_event
         callback = sched_item.callback
