@@ -1,5 +1,6 @@
+import os, sys
+
 if __name__ == "__main__":
-    import os, sys
     # Add path for main files to run test script.
     sys.path.append(os.path.realpath("."))
 
@@ -45,6 +46,8 @@ class InatedbLogger(metaclass=Singleton):
             # self.debug_log.addFilter(LevelFilter(logging.DEBUG, logging.CRITICAL))
             handlers.append(self.debug_log)
 
+        if not os.path.exists("logs"):
+            os.makedirs("logs")
         self.info_log = TimedRotatingFileHandler("logs/inmatedb_info.log", when="d", interval=1, backupCount=3)
         self.info_log.addFilter(LevelFilter(logging.INFO, logging.WARNING))
         handlers.append(self.info_log)
