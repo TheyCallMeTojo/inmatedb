@@ -1,23 +1,33 @@
-import os
+import grequests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 
-import requests
+from logger.inmatedb_logger import InatedbLogger
+
+import os
 from bs4 import BeautifulSoup
-from metaclasses.singleton import Singleton
-from persistence.data_models import *
-from datetime import datetime
 from scraping import scraping_utils as utils
-import time
+from persistence.data_models import *
+
+from metaclasses.singleton import Singleton
+from functools import partial
+from datetime import datetime
 
 
 class ProfileParse(metaclass=Singleton):
 
-    def __init__(self, inmate_table=None, booking_number=None):
+    def __init__(self):
         self.invalidate_cached_values()
 
-        if inmate_table is not None:
-            self.load_profile(inmate_table)
-        elif booking_number is not None:
-            self.load_profile_by_booking_number(booking_number)
+        self.logger = InatedbLogger()
+
+        s = grequests.Session()
+        error_codes = list(range(400, 599))
+        retries = Retry(total=5, backoff_factor=0.3, status_forcelist=error_codes, raise_on_status=True)
+        s.mount('http://', HTTPAdapter(max_retries=retries))
+        s.mount('https://', HTTPAdapter(max_retries=retries))
+        self.new_request = partial(grequests.get, session=s, timeout=1)
+
     
     def invalidate_cached_values(self):
         self.profile_html = None
@@ -28,27 +38,14 @@ class ProfileParse(metaclass=Singleton):
         self.__data = None
         self.__image_filepath = None
 
-    def load_profile(self, inmate_table):
-        booking_num = int(utils.get_table_value(inmate_table, "Booking #"))
-        self.load_profile_by_booking_number(booking_num)
-    
-    def load_profile_by_booking_number(self, booking_number):
+    def request_profile_pages(self, profile_urls):
+        requests = (self.new_request(url) for url in profile_urls)
+        return grequests.imap(requests, size=7)
+   
+    def parse_profile(self, profile_html):
         self.invalidate_cached_values()
-        profile_url = f"https://www.capecountysheriff.org/roster_view.php?booking_num={booking_number}"
-
-        # TODO: Add proper error handling
-        for attempt in range(5):
-            try:
-                page = requests.get(profile_url)
-                break
-            except ConnectionError:
-                if attempt == 4:
-                    raise Exception(f"Failed to load profile {booking_number}")
-                time.sleep(1)
-        
-        self.profile_html = BeautifulSoup(page.content, 'html.parser')
+        self.profile_html = BeautifulSoup(profile_html, 'html.parser')
         return self.profile_html
-
 
     @property
     def image_filepath(self):
@@ -64,9 +61,13 @@ class ProfileParse(metaclass=Singleton):
             image_relpath = inmate_image_elm['src']
             image_url = f"https://www.capecountysheriff.org/{image_relpath}"
 
+            request = self.new_request(image_url).send()
+            if request.response is None:
+                self.logger.warning("Failed to download a profile image")
+                return None
+
             with open(image_filepath, "wb") as img_file:
-                img_file.write(requests.get(image_url).content)
-                utils.random_delay(min_delay=10, max_delay=50)
+                img_file.write(request.response.content)
 
         self.__image_filepath = image_filepath
         return self.__image_filepath
@@ -134,7 +135,7 @@ class ProfileParse(metaclass=Singleton):
         booking_date_unformated = datetime.strptime(booking_date, "%m-%d-%Y - %I:%S %p").timestamp()
         charges = self.fetch_inmate_charges()
         bond = utils.get_table_value(self.profile_table, "Bond")
-        jailed = True
+        jailed = True # True, because all profiles are pulled from the current roster.
         self.__status = InmateStatus(agency, booking_num, booking_date, booking_date_unformated, charges, bond, jailed)
         return self.__status
     
@@ -147,6 +148,10 @@ class ProfileParse(metaclass=Singleton):
         demos = self.demos
         status = self.status
         img_path = self.image_filepath
+
+        if None in [name, demos, status, img_path]:
+            self.logger.warning("Failed to parse profile...")
+            return None
+
         self.__data = ProfileData(name, demos, status, img_path)
         return self.__data
-

@@ -1,16 +1,14 @@
-import logging
-import time
-
-from tqdm import tqdm
-
-from event_scheduler import EventScheduler, ScheduleItem, TimeSlot
-from logger.inmatedb_logger import InatedbLogger
+from scraping.profile_parser import ProfileParse
+from scraping.roster_parser import RosterParse
 
 from persistence.data_models import *
 from persistence.inmate_dao import InmateDAO, bundle_profile_data
 
-from scraping.profile_parser import ProfileParse
-from scraping.roster_parser import RosterParse
+from event_scheduler import EventScheduler, ScheduleItem, TimeSlot
+
+from tqdm import tqdm
+from logger.inmatedb_logger import InatedbLogger
+import logging
 
 
 class ScraperApp:
@@ -21,6 +19,8 @@ class ScraperApp:
         self.dao = InmateDAO()
         self.logger = logger
 
+        self.scrape_success = True
+
     def scrape_data(self):
         '''
         Read the current roster. Insert any new inmates into the database.
@@ -29,11 +29,29 @@ class ScraperApp:
 
         self.roster.invalidate_cached_values()
 
-        for inmate in tqdm(self.roster.inmate_tables, desc="scraping roster"):
-            self.profile.load_profile(inmate)
-            self.dao.put_member(self.profile.data)
-            time.sleep(100/1000)
+        profile_urls = self.roster.profile_urls
+        if profile_urls is None:
+            self.logger.warning("Failed to parse roster for profile urls!")
+            self.scrape_success = False
+            return None
         
+        profile_requests = self.profile.request_profile_pages(profile_urls)
+        for resp in tqdm(profile_requests, total=len(profile_urls), desc="scraping roster"):
+            if resp is None:
+                # TODO: Create a failed tasks list so retry events only process failed tasks
+                self.logger.warning("Failed to request a profile!")
+                continue
+
+            self.profile.parse_profile(resp.content)
+            if self.profile.data is None:
+                # TODO: Create a failed tasks list so retry events only process failed tasks
+                self.logger.warning("Failed to parse a profile!")
+                continue
+            
+            self.dao.put_member(self.profile.data)
+        
+        self.scrape_success = True
+
         members = self.dao.get_all_members()
         for member in tqdm(members, desc="validating 'jailed' flags"):
             bk_number = member.status.booking_number
@@ -42,6 +60,7 @@ class ScraperApp:
             member_dict['status']['jailed'] = is_jailed
             member = bundle_profile_data(member_dict)
             self.dao.put_member(member)
+        
     
     def run(self):
         scheduler = EventScheduler(silent=False)
@@ -51,19 +70,27 @@ class ScraperApp:
             callback_args=()
         )
 
+        scraping_retry_event = ScheduleItem(
+            start=TimeSlot(minute_offset=9),
+            callback=self.scrape_data,
+            callback_args=()
+        )
+
         try:
             # Scrape data first on start-up
             self.scrape_data()
 
-            # TODO: run scraper app in either a seperate process or thread
             while True:
-                # While the app is running, scrape data regularly and on a schedule.
-                scheduler.schedule_event(scraping_event)
+                # Scrape data on a schedule
+                if not self.scrape_success:
+                    scheduler.schedule_event(scraping_retry_event)
+                else:
+                    scheduler.schedule_event(scraping_event)
+
                 scheduler.run_schedule()
         except KeyboardInterrupt:
             pass
         except BaseException:
-            # Just logging errors right now. TODO: add proper error handling
             self.logger.critical("Scraper failed!")
 
 if __name__ == "__main__":

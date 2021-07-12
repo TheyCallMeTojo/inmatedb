@@ -37,6 +37,9 @@ class InatedbLogger(metaclass=Singleton):
         date_fmt = "%m/%d/%Y %I:%M:%S %p"
 
         logging.getLogger('urllib3.connectionpool').addFilter(lambda r: False)
+        logging.getLogger('urllib3.util.retry').addFilter(lambda r: False)
+        
+        
         self.__logger = logging.getLogger("inmatedb_log")
 
         handlers = []

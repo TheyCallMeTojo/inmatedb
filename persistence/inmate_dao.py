@@ -44,8 +44,11 @@ class InmateDAO(metaclass=Singleton):
         TinyDB.default_table_name = "inmates"
         self.db = TinyDB(database_filepath)
 
-    def put_member(self, profile: ProfileData):
+    def put_member(self, profile: Optional[ProfileData]):
         '''Inserts/Updates profile in the database.'''
+
+        if profile is None:
+            return None
 
         record = profile.as_dict()
         bk_number = profile.status.booking_number
