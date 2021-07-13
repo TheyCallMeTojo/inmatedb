@@ -68,7 +68,7 @@ class SearchArgs(NamedTuple):
     target: object
     condition: Optional[str] = "match_eq"
 
-@api.resource("/api/inmates/search/")
+@api.resource("/api/search/")
 class InmatesSearch(Resource):
     def get(self):
         if not request.is_json:
@@ -93,13 +93,13 @@ class InmatesSearch(Resource):
             "results" : [e.as_dict() for e in members]
         })
 
-@api.resource("/api/inmates/search/lastname/<last_name>")
+@api.resource("/api/search/lastname/<last_name>")
 class InmatesSearchLastName(Resource):
     def get(self, last_name):
         members = dao.get_members_by_lastname(last_name)
         return jsonify([e.as_dict() for e in members])
 
-@api.resource("/api/inmates/search/firstname/<first_name>")
+@api.resource("/api/search/firstname/<first_name>")
 class InmatesSearchFirstName(Resource):
     def get(self, first_name):
         members = dao.get_members_by_firstname(first_name)
