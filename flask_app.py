@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from flask import make_response, jsonify
 from flask_restful import Resource, Api, request, abort
 
-
 from typing import NamedTuple, Optional
 from persistence.inmate_dao import InmateDAO, QueryCondition
 from persistence.data_models import *

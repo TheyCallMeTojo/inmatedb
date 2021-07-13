@@ -2,7 +2,7 @@ import grequests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from logger.inmatedb_logger import InatedbLogger
+from logger.inmatedb_logger import InmatedbLogger
 
 import os
 from bs4 import BeautifulSoup
@@ -13,13 +13,15 @@ from metaclasses.singleton import Singleton
 from functools import partial
 from datetime import datetime
 
+from helpers.pathutils import get_project_dir, extend_relpath
+
 
 class ProfileParse(metaclass=Singleton):
 
     def __init__(self):
         self.invalidate_cached_values()
 
-        self.logger = InatedbLogger()
+        self.logger = InmatedbLogger()
 
         s = grequests.Session()
         error_codes = list(range(400, 599))
@@ -52,10 +54,12 @@ class ProfileParse(metaclass=Singleton):
         if self.__image_filepath is not None:
             return self.__image_filepath
         
-        image_filepath = f"data/img/{self.status.booking_number}.jpg"
+        image_folderpath = extend_relpath("data/img/")
+        image_filepath = os.path.join(image_folderpath, f"{self.status.booking_number}.jpg")
 
-        if not os.path.exists("data/img"):
-            os.makedirs("data/img")
+        if not os.path.exists(image_folderpath):
+            os.makedirs(image_folderpath)
+        
         if not os.path.exists(image_filepath):
             inmate_image_elm = self.profile_table.find(name="img")
             image_relpath = inmate_image_elm['src']

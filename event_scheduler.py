@@ -3,7 +3,7 @@ import sched
 import time
 from typing import Callable, NamedTuple
 
-from logger.inmatedb_logger import InatedbLogger
+from logger.inmatedb_logger import InmatedbLogger
 
 
 class TimeSlot(NamedTuple):
@@ -43,7 +43,7 @@ class EventScheduler:
     def __init__(self, silent=False):
         self.silent = silent
         self.scheduler = sched.scheduler(time.time, time.sleep)
-        self.logger = InatedbLogger()
+        self.logger = InmatedbLogger()
 
     def schedule_event(self, sched_item, scheduler=None):
         if scheduler is None:

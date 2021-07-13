@@ -7,13 +7,13 @@ from persistence.data_models import *
 
 from event_scheduler import EventScheduler, ScheduleItem, TimeSlot
 
-from logger.inmatedb_logger import InatedbLogger
+from logger.inmatedb_logger import InmatedbLogger
 import logging
 
 
 class ScraperApp:
     
-    def __init__(self, logger:InatedbLogger):
+    def __init__(self, logger:InmatedbLogger):
         self.roster = RosterParse()
         self.profile = ProfileParse()
         self.dao = InmateDAO()
@@ -103,8 +103,8 @@ if __name__ == "__main__":
     #     api_key="YOUR_API_KEY",
     #     channel_tag="CHANNEL_TAG"
     # )
-    # logger = InatedbLogger(push_credentials=credentials)
-    logger = InatedbLogger(logging.DEBUG)
+    # logger = InmatedbLogger(push_credentials=credentials)
+    logger = InmatedbLogger(logging.DEBUG)
 
 
     ScraperApp(logger).run()

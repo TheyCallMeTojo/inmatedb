@@ -2,7 +2,7 @@ import grequests
 from requests.adapters import HTTPAdapter
 from urllib3 import Retry
 
-from logger.inmatedb_logger import InatedbLogger
+from logger.inmatedb_logger import InmatedbLogger
 
 from bs4 import BeautifulSoup
 from scraping import scraping_utils as utils
@@ -18,7 +18,7 @@ class RosterParse(metaclass=Singleton):
     def __init__(self):
         self.invalidate_cached_values()
         
-        self.logger = InatedbLogger()
+        self.logger = InmatedbLogger()
 
         s = grequests.Session()
         error_codes = list(range(400, 599))

@@ -1,9 +1,5 @@
 import os, sys
 
-if __name__ == "__main__":
-    # Add path for main files to run test script.
-    sys.path.append(os.path.realpath("."))
-
 import sys
 
 import logging
@@ -14,6 +10,7 @@ from metaclasses.singleton import Singleton
 
 from logger.push_handler import PushHandler, PushCredentials
 from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
+from helpers.pathutils import get_project_dir, extend_relpath
 
 
 class LevelFilter(logging.Filter):
@@ -25,7 +22,7 @@ class LevelFilter(logging.Filter):
     def filter(self, record):
         return self._low <= record.levelno <= self._high
 
-class InatedbLogger(metaclass=Singleton):
+class InmatedbLogger(metaclass=Singleton):
 
     def __init__(self, log_level=logging.DEBUG, push_credentials=None):
         message_fmt = textwrap.dedent('''
@@ -48,13 +45,17 @@ class InatedbLogger(metaclass=Singleton):
             # self.debug_log.addFilter(LevelFilter(logging.DEBUG, logging.CRITICAL))
             handlers.append(self.debug_log)
 
-        if not os.path.exists("logs"):
-            os.makedirs("logs")
-        self.info_log = TimedRotatingFileHandler("logs/inmatedb_info.log", when="h", interval=1, backupCount=3)
+        logs_folderpath = extend_relpath("logs")
+        if not os.path.exists(logs_folderpath):
+            os.makedirs(logs_folderpath)
+        
+        info_log_path = extend_relpath("logs/inmatedb_info.log")
+        self.info_log = TimedRotatingFileHandler(info_log_path, when="h", interval=1, backupCount=3)
         self.info_log.addFilter(LevelFilter(logging.INFO, logging.WARNING))
         handlers.append(self.info_log)
 
-        self.error_log = RotatingFileHandler("logs/inmatedb_error.log", maxBytes=3000, backupCount=5)
+        error_log_path = extend_relpath("logs/inmatedb_error.log")
+        self.error_log = RotatingFileHandler(error_log_path, maxBytes=5000, backupCount=5)
         self.error_log.addFilter(LevelFilter(logging.ERROR, logging.CRITICAL))
         handlers.append(self.error_log)
 
@@ -95,28 +96,4 @@ class InatedbLogger(metaclass=Singleton):
     def critical(self):
         _type, _value, _tb = sys.exc_info()
         return partial(self.__logger.critical, exc_info=_value)
-            
 
-if __name__ == "__main__":
-
-    ## In case you want to recieve notifications on your phone/desktop I added logging support for PushBullet
-    # credentials = PushCredentials(
-    #     api_key="YOUR_API_KEY",
-    #     channel_tag="CHANNEL_TAG"
-    # )
-    # logger = InatedbLogger(push_credentials=credentials)
-
-    logger = InatedbLogger(log_level=logging.DEBUG)
-
-    def anything_that_breaks():
-        logger.info("running function to test logger.")
-
-        try:
-            logger.debug("about to do something really dangerous...")
-            1/0
-            logger.warning("uh... we shouldn't get this far.")
-        except ZeroDivisionError:
-            logger.error("can't divide by zero.")
-            logger.critical("critical failure.")
-    
-    anything_that_breaks()

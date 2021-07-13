@@ -1,11 +1,12 @@
-import os
-from functools import reduce
-from typing import List, Optional
+from tinydb import Query, TinyDB
+from persistence.data_models import *
 
 from metaclasses.singleton import Singleton
-from tinydb import Query, TinyDB
+from typing import List, Optional
+from functools import reduce
 
-from persistence.data_models import *
+from helpers.pathutils import get_project_dir, extend_relpath
+import os
 
 
 def bundle_profile_data(record: dict) -> ProfileData:
@@ -39,17 +40,15 @@ class QueryCondition:
 class InmateDAO(metaclass=Singleton):
 
     def __init__(self, database_filepath="data/inmatedb.json"):
-        if not os.path.exists("data"):
-            os.makedirs("data")
+        database_filepath = extend_relpath(database_filepath)
+        data_path = extend_relpath("data")
+
+        if not os.path.exists(data_path):
+            os.makedirs(data_path)
+        
         TinyDB.default_table_name = "inmates"
         self.db = TinyDB(database_filepath)
 
-    def load_database(self, database_filepath):
-        if self.db is not None:
-            self.db.close()
-
-        TinyDB.default_table_name = "inmates"
-        self.db = TinyDB(database_filepath)
 
     def put_member(self, profile: Optional[ProfileData]):
         '''Inserts/Updates profile in the database.'''
