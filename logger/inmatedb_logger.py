@@ -13,7 +13,7 @@ from functools import partial
 from metaclasses.singleton import Singleton
 
 from logger.push_handler import PushHandler, PushCredentials
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import TimedRotatingFileHandler, RotatingFileHandler
 
 
 class LevelFilter(logging.Filter):
@@ -29,10 +29,9 @@ class InatedbLogger(metaclass=Singleton):
 
     def __init__(self, log_level=logging.DEBUG, push_credentials=None):
         message_fmt = textwrap.dedent('''
-
         {asctime}
         {levelname}: {module}.{funcName} (line {lineno})
-        msg: {message}\
+        msg: {message}
         ''')
         date_fmt = "%m/%d/%Y %I:%M:%S %p"
 
@@ -51,11 +50,11 @@ class InatedbLogger(metaclass=Singleton):
 
         if not os.path.exists("logs"):
             os.makedirs("logs")
-        self.info_log = TimedRotatingFileHandler("logs/inmatedb_info.log", when="d", interval=1, backupCount=3)
+        self.info_log = TimedRotatingFileHandler("logs/inmatedb_info.log", when="h", interval=1, backupCount=3)
         self.info_log.addFilter(LevelFilter(logging.INFO, logging.WARNING))
         handlers.append(self.info_log)
 
-        self.error_log = TimedRotatingFileHandler("logs/inmatedb_error.log", when="d", interval=1, backupCount=3)
+        self.error_log = RotatingFileHandler("logs/inmatedb_error.log", maxBytes=3000, backupCount=5)
         self.error_log.addFilter(LevelFilter(logging.ERROR, logging.CRITICAL))
         handlers.append(self.error_log)
 

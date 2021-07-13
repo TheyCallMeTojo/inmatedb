@@ -29,6 +29,13 @@ class QueryCondition:
     match_gt = lambda value: lambda query: query > value
     match_lt = lambda value: lambda query: query < value
 
+    conditions = {
+        "match_eq": match_eq,
+        "match_ne": match_ne,
+        "match_gt": match_gt,
+        "match_lt": match_lt,
+    }
+
 class InmateDAO(metaclass=Singleton):
 
     def __init__(self, database_filepath="data/inmatedb.json"):
@@ -61,7 +68,12 @@ class InmateDAO(metaclass=Singleton):
         attrs = attribute.split('.')
         InmateAttribute = reduce(lambda query, attr: query[attr], attrs, Query())
         selector = condition(InmateAttribute)
-        results = self.db.search(selector)
+        
+        try:
+            results = self.db.search(selector)
+        except:
+            return []
+        
         profiles = list(map(bundle_profile_data, results))
         return sort_profiles_by_date(profiles)
 
@@ -84,6 +96,13 @@ class InmateDAO(metaclass=Singleton):
 
         attribute = "status.jailed"
         condition = QueryCondition.match_eq(True)
+        return self.get_members_by_attribute(attribute, condition)
+
+    def get_all_released_members(self) -> List[ProfileData]:
+        '''Gets the profile of every released member.'''
+
+        attribute = "status.jailed"
+        condition = QueryCondition.match_eq(False)
         return self.get_members_by_attribute(attribute, condition)
 
     def get_all_members(self) -> List[ProfileData]: 
