@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
+from flask import make_response, jsonify
 from flask_restful import Resource, Api, request, abort
+
 
 from typing import NamedTuple, Optional
 from persistence.inmate_dao import InmateDAO, QueryCondition
@@ -32,6 +34,11 @@ API_OPTIONS = [
     }
 ]
 
+
+@app.errorhandler(404)
+def not_found(e):
+    message = jsonify("Invalid resource URI")
+    return make_response(message, 404)
 
 @api.resource("/api/", "/")
 class ApiRoot(Resource):
