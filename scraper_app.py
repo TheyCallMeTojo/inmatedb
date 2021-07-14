@@ -8,6 +8,7 @@ from persistence.data_models import *
 from event_scheduler import EventScheduler, ScheduleItem, TimeSlot
 
 from logger.inmatedb_logger import InmatedbLogger
+from logger.push_handler import PushHandler, PushCredentials
 import logging
 
 
