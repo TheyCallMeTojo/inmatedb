@@ -14,10 +14,18 @@ https://www.capecountysheriff.org/roster.php?grp=10
 + [Pushbullet Channels](https://blog.pushbullet.com/2014/09/30/introducing-pushbullet-channels/) for server notifications
   + [Pushbullet Python API](https://github.com/rbrcsk/pushbullet.py) for communicating with pushbullet servers
 
+
+### API Documentation:
++ [inmatedb api docs](https://documenter.getpostman.com/view/16660912/Tzm9kaor) using postman documenter
++ [docs workspace](https://www.postman.com/cryosat-astronaut-60319953/workspace/36378a89-1b57-4545-8d17-00f2688fb29c/documentation/16660912-717899a6-ee46-486f-9a9f-0df0dad0b2be) postman docs workspace
+
+
 ### Test Server:
 Temporarily, for one month, I'll host a test-server on linode.
 
 For now, you can test the api endpoints using this address: http://inmatedb.crabdance.com/api/
+
+
 
 ### Deployment Instructions:
 
