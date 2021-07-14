@@ -53,7 +53,7 @@ $ export SECRET_KEY=your_secret_key
 
 # Config apache for our server app
 $ sudo nano inmatedb.conf
-# Edit config file by replacing <SERVIER_IP> with your server's Public IP. (alternatively, a domain or subdomain)
+# Edit config file by replacing <SERVIER_IP> with your server's Public IP (or a sub/domain.)
 $ sudo mv inmatedb.conf /etc/apache2/sites-available/
 $ sudo a2ensite inmatedb.conf
 
