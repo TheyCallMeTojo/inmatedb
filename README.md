@@ -14,6 +14,10 @@ https://www.capecountysheriff.org/roster.php?grp=10
 + [Pushbullet Channels](https://blog.pushbullet.com/2014/09/30/introducing-pushbullet-channels/) for server notifications
   + [Pushbullet Python API](https://github.com/rbrcsk/pushbullet.py) for communicating with pushbullet servers
 
+### Test Server:
+Temporarily, for one month, I'll host a test-server on linode.
+For now, you can test the api endpoints using this address: http://inmatedb.crabdance.com/api/
+
 ### Deployment Instructions:
 
 #### My server configuration on [linode ($5/mo)](https://www.linode.com/):
