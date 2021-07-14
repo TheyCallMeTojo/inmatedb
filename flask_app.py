@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask import make_response, jsonify
 from flask_restful import Resource, Api, request, abort
 
@@ -6,6 +6,9 @@ from typing import NamedTuple, Optional
 from persistence.inmate_dao import InmateDAO, QueryCondition
 from persistence.data_models import *
 from persistence.model import Model, model_from_dict, model_as_dict
+
+from helpers.pathutils import get_project_dir, extend_relpath
+from pathlib import Path
 
 
 app = Flask(__name__)
@@ -18,7 +21,8 @@ API_OPTIONS = [
         "endpoints": [
             "/api/inmates",
             "/api/inmates/jailed",
-            "/api/inmates/released"
+            "/api/inmates/released",
+            "/api/inmates/images/<path:filename>"
         ],
         "methods": ["GET"]
     },
@@ -26,8 +30,8 @@ API_OPTIONS = [
         "resource": "/api/search",
         "endpoints": [
             "/api/search",
-            "/api/search/firstname/",
-            "/api/search/lastname/"
+            "/api/search/firstname/<first_name>",
+            "/api/search/lastname/<last_name>"
         ],
         "methods": ["GET"]
     }
@@ -43,6 +47,15 @@ def not_found(e):
 class ApiRoot(Resource):
     def options(self):
         return API_OPTIONS
+
+@api.resource("/api/inmates/images/<path:filename>")
+class InmatesImages(Resource):
+    def get(self, filename):
+        project_dir = Path(get_project_dir())
+        images_folderpath = Path("data", "img")
+        images_folderpath = str(Path(project_dir, images_folderpath))
+
+        return send_from_directory(images_folderpath, filename)
 
 @api.resource("/api/inmates/")
 class InmatesRoot(Resource):

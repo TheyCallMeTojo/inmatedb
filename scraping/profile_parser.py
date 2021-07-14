@@ -14,7 +14,7 @@ from functools import partial
 from datetime import datetime
 
 from helpers.pathutils import get_project_dir, extend_relpath
-
+from pathlib import Path
 
 class ProfileParse(metaclass=Singleton):
 
@@ -38,7 +38,7 @@ class ProfileParse(metaclass=Singleton):
         self.__demos = None
         self.__status = None
         self.__data = None
-        self.__image_filepath = None
+        self.__image_filename = None
 
     def request_profile_pages(self, profile_urls):
         requests = (self.new_request(url) for url in profile_urls)
@@ -50,9 +50,9 @@ class ProfileParse(metaclass=Singleton):
         return self.profile_html
 
     @property
-    def image_filepath(self):
-        if self.__image_filepath is not None:
-            return self.__image_filepath
+    def image_filename(self):
+        if self.__image_filename is not None:
+            return self.__image_filename
         
         image_folderpath = extend_relpath("data/img/")
         image_filepath = os.path.join(image_folderpath, f"{self.status.booking_number}.jpg")
@@ -73,8 +73,9 @@ class ProfileParse(metaclass=Singleton):
             with open(image_filepath, "wb") as img_file:
                 img_file.write(request.response.content)
 
-        self.__image_filepath = image_filepath
-        return self.__image_filepath
+        image_filename = Path(image_filepath).parts[-1]
+        self.__image_filename = image_filename
+        return self.__image_filename
 
     @property
     def profile_table(self):
@@ -151,11 +152,11 @@ class ProfileParse(metaclass=Singleton):
         name = self.name
         demos = self.demos
         status = self.status
-        img_path = self.image_filepath
+        img_fname = self.image_filename
 
-        if None in [name, demos, status, img_path]:
+        if None in [name, demos, status, img_fname]:
             self.logger.warning("Failed to parse profile...")
             return None
 
-        self.__data = ProfileData(name, demos, status, img_path)
+        self.__data = ProfileData(name, demos, status, img_fname)
         return self.__data
