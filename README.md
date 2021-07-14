@@ -1,6 +1,6 @@
 # inmatedb
 
-A server application for collecting data about incarceration in America.
+A server application for collecting data about incarceration in the United States.
 
 ### Data Sources: 
 https://www.capecountysheriff.org/roster.php?grp=10
