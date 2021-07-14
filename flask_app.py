@@ -15,27 +15,33 @@ app = Flask(__name__)
 api = Api(app)
 dao = InmateDAO()
 
-API_OPTIONS = [
-    {
-        "resource": "/api/inmates",
-        "endpoints": [
-            "/api/inmates",
-            "/api/inmates/jailed",
-            "/api/inmates/released",
-            "/api/inmates/images/<path:filename>"
-        ],
-        "methods": ["GET"]
-    },
-    {
-        "resource": "/api/search",
-        "endpoints": [
-            "/api/search",
-            "/api/search/firstname/<first_name>",
-            "/api/search/lastname/<last_name>"
-        ],
-        "methods": ["GET"]
-    }
-]
+API_OPTIONS = {
+    "documentation" : "https://documenter.getpostman.com/view/16660912/Tzm9kaor",
+    "documentation_workspace" : "https://www.postman.com/cryosat-astronaut-60319953/workspace/36378a89-1b57-4545-8d17-00f2688fb29c/documentation/16660912-717899a6-ee46-486f-9a9f-0df0dad0b2be",
+    "resources": [
+        {
+            "resource": "/api/inmates",
+            "documentation": "https://documenter.getpostman.com/view/16660912/Tzm9kaor#9c3d5d19-ef67-419e-bbbe-6e3ec6b3f5b6",
+            "endpoints": [
+                "/api/inmates",
+                "/api/inmates/jailed",
+                "/api/inmates/released",
+                "/api/inmates/images/<path:filename>"
+            ],
+            "methods": ["GET"]
+        },
+        {
+            "resource": "/api/search",
+            "documentation": "https://documenter.getpostman.com/view/16660912/Tzm9kaor#b0f1e1bf-bdfc-48b0-8f90-f92dc536f3f3",
+            "endpoints": [
+                "/api/search",
+                "/api/search/firstname/<first_name>",
+                "/api/search/lastname/<last_name>"
+            ],
+            "methods": ["GET"]
+        }
+    ]
+}
 
 
 @app.errorhandler(404)
@@ -46,6 +52,9 @@ def not_found(e):
 @api.resource("/api/", "/")
 class ApiRoot(Resource):
     def options(self):
+        return API_OPTIONS
+
+    def get(self):
         return API_OPTIONS
 
 @api.resource("/api/inmates/images/<path:filename>")
