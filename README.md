@@ -80,6 +80,6 @@ $ systemctl reload apache2
 
 # Make sure the scraper app is running.
 ## If it isn't active, then start it again.
-$ sudo python3 scraper_app.py
+$ sudo -u www-data python3 scraper_app.py
 ```
 
