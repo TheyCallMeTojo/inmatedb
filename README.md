@@ -78,8 +78,7 @@ $ cd inmatedb
 # Restart apache
 $ systemctl reload apache2
 
-# Make sure the scraper app is running.
-## If it isn't active, then start it again.
+# Restart the scraper app using www-data as the user
 $ sudo -u www-data python3 scraper_app.py
 ```
 
