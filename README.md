@@ -23,7 +23,8 @@ https://www.capecountysheriff.org/roster.php?grp=10
 ### Test Server:
 Temporarily, for one month, I'll host a test-server on linode.
 
-For now, you can test the api endpoints using this address: http://inmatedb.crabdance.com/api/
+<s>For now, you can test the api endpoints using this address: http://inmatedb.crabdance.com/api/</s>
+(Temp server shutdown Aug 23, 2021.)
 
 
 
